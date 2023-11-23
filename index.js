@@ -66,7 +66,7 @@ async function main() {
     
     // For facebook
     formData.append("access_token", process.env.TOKEN); // Facebook Page access token
-    formData.append("published", "false"); // "false" for debugging
+    formData.append("published", "true"); // "false" for debugging
     
     try {
         console.log(`Episode ${episodeWithPad} - Frame ${current_frame}/${data.max_frame} is publishing...`);
@@ -75,9 +75,6 @@ async function main() {
             method: sxcu.RequestMethod || "POST",
             body: sxcuData
         }).then(r => r.json());
-        
-        // TODO: Remove after debug
-        console.log(sxRes);
         
         if (!sxRes.url) throw new Error("No image url.");
         const caption = `Episode ${episodeWithPad} - Frame ${current_frame} out of ${data.max_frame}\n` // Main caption
@@ -91,10 +88,6 @@ async function main() {
             method: "post"
         }).then(r => r.json());
         if (res.error) throw new Error(res.error.message);
-        
-        // TODO: Remove after debug
-        console.log(res);
-        console.log(formData);
         
         console.log(`Episode ${episodeWithPad} - Frame ${current_frame}/${data.max_frame} published!`);
         
