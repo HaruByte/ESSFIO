@@ -6,6 +6,7 @@
 * All the anime video file must be in "animes" folder with format name "XX.{ mp4 | mkv }".
 */
 
+require("./utils/console.js");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
@@ -37,7 +38,7 @@ function create(episode = 1) {
     // Folders handling
     if (fs.existsSync("frames")) {
         // If exist, delete all the files inside.
-        console.log("\"frames\" folder already exist. Deleting all the frame files...");
+        console.log("Deleting all the frame files...");
         
         const frames = fs.readdirSync("frames");
         if (frames) for (const fr of frames) {
@@ -63,32 +64,47 @@ function create(episode = 1) {
         }
         // But hey! I have the public one here.
         
-        // Get the anime file first
-        const anime = fs.readdirSync("animes")
-        .filter(a => /\.(mp4|mkv)$/.test(a) && a.includes(episodePad))[0]; // Filter only video with exact episode and format
+        // Get the files inside "animes" folder
+        const animes = fs.readdirSync("animes");
+        // Filter only video with filename "XX.{ mp4 | mkv }"
+        const anime = animes.filter(a => /\.(mp4|mkv)$/.test(a) && a.includes(episodePad))[0];
+        
         // Check it again, just to make sure if the file is exist
         if (!anime) throw new Error("Video file is not found!");
-        console.log(`Start creating episode ${episodePad}...`);
         
+        console.log(`Start creating data and frames for episode ${episodePad}...`);
         // Extract the frames.
         // Gotta use jpeg for this since png really fucked up the storage
         console.log("Extracting frames...");
-        execSync(`ffmpeg -i "animes/${anime}" -r 2 -qscale:v 2 -vf "fps=2${(anime.includes(".mkv")) ? ",subtitles=animes/" + anime : ""}" -hide_banner -loglevel error -stats ./frames/${episodePad}_%04d.jpeg -y > /dev/null 2>&1`);
+        
+        const args = [
+            `-i "animes/${anime}"`, // Getting the video file
+            "-r 2", // Make it 2FPS
+            "-qscale:v 2", // So the frame file is not blurry
+            `-vf "fps=2${(anime.includes(".mkv")) ? ",subtitles=animes/" + anime : ""}"`, // Also making the video 2fps but add subtitle filter if file is mkv
+            "-hide_banner", // Hide the banner, i guess?
+            "-loglevel error", // Uhm...
+            "-stats", // Idk...
+            "-y" // Yess
+        ];
+        execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
+        
         // And then set up config
         config();
     } catch (err) {
-        console.error(err);
+        console.error(err.message);
         process.exit(1); // Need to kill so that index.js doesnt continue shit.
     }
 }
 
 function config() {
     const frames = fs.readdirSync("frames");
+    const animes = fs.readdirSync("animes");
     const episode = frames[0].split("_")[0];
     
     const configs = {
         current_episode: parseInt(episode),
-        max_episode: 12,
+        max_episode: animes.length,
         current_frame: 1,
         max_frame: frames.length
     }
