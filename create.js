@@ -103,7 +103,7 @@ function config(max_episode) {
     
     const frames = fs.readdirSync("frames");
     const animes = fs.readdirSync("animes");
-    const episode = frames[0].split("_")[0];
+    const episode = frames[0].split("_")[0]; // The prefix of the file is the episode
     
     const configs = {
         current_episode: parseInt(episode),
