@@ -23,8 +23,7 @@ if (require.main == module) {
 function create(episode = 1) {
     // Check if episode is number.
     if (typeof episode != "number") {
-        console.error("Invalid parameter. Exiting...")
-        process.exit(1);
+        throw new TypeError("episode is not a number.");
     }
     // And check the animes folder too.
     if (!fs.existsSync("animes")) {
@@ -59,7 +58,7 @@ function create(episode = 1) {
         // We have our private stuff in here so....
         if (fs.existsSync("create.private.sh")) {
             execSync(`bash create.private.sh ${episodePad}`);
-            config();
+            config(12);
             return;
         }
         // But hey! I have the public one here.
@@ -97,14 +96,18 @@ function create(episode = 1) {
     }
 }
 
-function config() {
+function config(max_episode) {
+    if (max_episode && typeof max_episode != "number") {
+        throw new TypeError("max_episode is not a number.");
+    }
+    
     const frames = fs.readdirSync("frames");
     const animes = fs.readdirSync("animes");
     const episode = frames[0].split("_")[0];
     
     const configs = {
         current_episode: parseInt(episode),
-        max_episode: animes.length,
+        max_episode: max_episode || animes.length,
         current_frame: 1,
         max_frame: frames.length
     }
