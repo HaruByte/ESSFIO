@@ -58,7 +58,7 @@ function create(episode = 1) {
     try {
         // We have our private stuff in here so....
         if (fs.existsSync("create.private.sh")) {
-            execSync(`bash create.private.sh ${episodePad} > /dev/null 2>&1`);
+            execSync(`bash create.private.sh ${episodePad}`);
             config();
             return;
         }
