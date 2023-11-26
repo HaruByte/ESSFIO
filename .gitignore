@@ -131,6 +131,7 @@ dist
 
 # Private executable
 create.private.sh
+create.private.sh.bak
 
 # Some shits
 animes

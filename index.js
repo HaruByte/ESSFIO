@@ -40,7 +40,7 @@ const sxcu = (fs.existsSync(sxcuPath))
             process.exit(0);
         } else {
             // Still has episode, call create.
-            create(data.current_episode + 1);
+            create(data.current_episode + 1, data.max_episode);
         }
         
         // Call main again.
@@ -89,8 +89,12 @@ const sxcu = (fs.existsSync(sxcuPath))
             + `#ESSFIOEPS${data.current_episode}`; // Unique tag
         
         // for Facebook
+        const published = (process.env.PUBLISHED != undefined)
+            ? String(process.env.PUBLISHED) // For debugging because it will always false, otherwise if you change it to true.
+            : "true"; // PUBLISHED not exist or null, just use true.
+        
         formData.append("access_token", process.env.TOKEN); // Facebook Page access token
-        formData.append("published", "true"); // "false" for debugging
+        formData.append("published", published);
         formData.append("url", sxRes.url + ".jpeg");
         formData.append("caption", caption);
         

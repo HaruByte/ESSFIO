@@ -6,26 +6,47 @@
 * All the anime video file must be in "animes" folder with format name "XX.{ mp4 | mkv }".
 */
 
-require("./utils/console.js");
 const fs = require("fs");
+const pkg = require("./package.json");
+const { program } = require("commander");
 const { execSync } = require("child_process");
 
 // Call the main function if called directly
 if (require.main == module) {
-    // The second argument here is the episode number.
-    if (process.argv[2]) {
-        create(parseInt(process.argv[2]));
-    } else {
-        create();
-    }
-}
-
-function create(episode = 1) {
-    // Check if episode is number.
-    if (typeof episode != "number") {
+    // Main
+    program
+        .name("create.js")
+        .description("Create new data file and extract frames from video file.")
+        .version(pkg.version)
+        .usage("[options] <episode (number)>");
+    
+    // Options
+    program
+        .option("-m, --max-episode <number>", "Using custom max episode instead");
+    
+    program.parse(process.argv);
+    const episode = program.args[0];
+    const max_episode = program.opts().maxEpisode;
+    const parsedEpisode = parseInt(episode);
+    const parsedMaxEpisode = parseInt(max_episode);
+    
+    // Show help if episode arg not exist
+    if (!episode) program.help();
+    
+    // Check if episode or max_episode is number.
+    if (max_episode && isNaN(parsedMaxEpisode)) {
+        throw new TypeError("max_episode is not a number.");
+    } else if (isNaN(parsedEpisode)) {
         throw new TypeError("episode is not a number.");
     }
-    // And check the animes folder too.
+    
+    // Create it now if valid
+    require("./utils/console.js");
+    create(parsedEpisode, parsedMaxEpisode);
+}
+
+function create(episode, max_episode) {
+    // Check the animes folder too.
     if (!fs.existsSync("animes")) {
         console.log("\"animes\" folder not exist. Exiting...")
         process.exit(1);
@@ -58,7 +79,7 @@ function create(episode = 1) {
         // We have our private stuff in here so....
         if (fs.existsSync("create.private.sh")) {
             execSync(`bash create.private.sh ${episodePad}`);
-            config(12);
+            config(max_episode);
             return;
         }
         // But hey! I have the public one here.
@@ -89,7 +110,7 @@ function create(episode = 1) {
         execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
         
         // And then set up config
-        config();
+        config(max_episode);
     } catch (err) {
         console.error(err.message);
         process.exit(1); // Need to kill so that index.js doesnt continue shit.
@@ -97,17 +118,12 @@ function create(episode = 1) {
 }
 
 function config(max_episode) {
-    if (max_episode && typeof max_episode != "number") {
-        throw new TypeError("max_episode is not a number.");
-    }
-    
     const frames = fs.readdirSync("frames");
-    const animes = fs.readdirSync("animes");
     const episode = frames[0].split("_")[0]; // The prefix of the file is the episode
     
     const configs = {
         current_episode: parseInt(episode),
-        max_episode: max_episode || animes.length,
+        max_episode: max_episode || fs.readdirSync("animes").length,
         current_frame: 1,
         max_frame: frames.length
     }
