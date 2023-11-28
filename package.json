@@ -20,6 +20,7 @@
   "homepage": "https://github.com/AozoraDev/ESSFIO#readme",
   "dependencies": {
     "commander": "^11.1.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "img-hasher": "^0.0.11"
   }
 }

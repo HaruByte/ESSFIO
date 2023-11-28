@@ -1,9 +1,12 @@
-/*
+/**
 * No Windows here, madam.
 * Go boot to Linux or use WSL.
 *
-* Anyway, This is for creating new data file and frames.
-* All the anime video file must be in "animes" folder with format name "XX.{ mp4 | mkv }".
+* Anyway, This is for creating new data file and generating frames from video file.
+* All the anime video file must be in "animes" folder with format name "XX.{ mp4 | mkv }" where "XX" is number like "01".
+*
+* @file
+* @author AozoraDev
 */
 
 const fs = require("fs");
@@ -45,8 +48,14 @@ if (require.main == module) {
     create(parsedEpisode, parsedMaxEpisode);
 }
 
+/**
+ * Create new data.json and generate frames file from video file.
+ * 
+ * @param {number} episode - The episode to generate.
+ * @param {number=} max_episode - Max episode for data.json
+ */
 function create(episode, max_episode) {
-    // Check the animes folder too.
+    // Check the animes folder.
     if (!fs.existsSync("animes")) {
         console.log("\"animes\" folder not exist. Exiting...")
         process.exit(1);
@@ -117,6 +126,11 @@ function create(episode, max_episode) {
     }
 }
 
+/**
+ * Create a new data.json and then save it to "configs" folder
+ *
+ * @param {number=} max_episode - Max episode for data.json
+ */
 function config(max_episode) {
     const frames = fs.readdirSync("frames");
     const episode = frames[0].split("_")[0]; // The prefix of the file is the episode
@@ -133,4 +147,8 @@ function config(max_episode) {
     console.log("Creating data and frames successfully!");
 }
 
+/**
+ * Module for creating new data.json and generating frame files
+ * @module create
+ */
 module.exports = create;
