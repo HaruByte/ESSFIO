@@ -25,27 +25,36 @@ if (require.main == module) {
     
     // Options
     program
-        .option("-m, --max-episode <number>", "Using custom max episode instead");
+        .option("-m, --max-episode <number>", "Using custom max episode instead")
+        .option("-d, --enable-duplicate-detection <boolean>", "Enable frame duplicate detection");
     
     program.parse(process.argv);
     const episode = program.args[0];
     const max_episode = program.opts().maxEpisode;
+    const duplicate_detection = (program.opts().enableDuplicateDetection)
+        ? JSON.parse(program.opts().enableDuplicateDetection)
+        : null;
+    
     const parsedEpisode = parseInt(episode);
     const parsedMaxEpisode = parseInt(max_episode);
     
     // Show help if episode arg not exist
     if (!episode) program.help();
     
-    // Check if episode or max_episode is number.
     if (max_episode && isNaN(parsedMaxEpisode)) {
         throw new TypeError("max_episode is not a number.");
-    } else if (isNaN(parsedEpisode)) {
+    }
+    if (isNaN(parsedEpisode)) {
         throw new TypeError("episode is not a number.");
     }
     
     // Create it now if valid
     require("./utils/console.js");
-    create(parsedEpisode, parsedMaxEpisode);
+    create(
+        parsedEpisode,
+        parsedMaxEpisode,
+        duplicate_detection
+    );
 }
 
 /**
@@ -53,8 +62,9 @@ if (require.main == module) {
  * 
  * @param {number} episode - The episode to generate.
  * @param {number=} max_episode - Max episode for data.json
+ * @param {boolean=} duplicate_detection - Enable duplicate detection
  */
-function create(episode, max_episode) {
+function create(episode, max_episode, duplicate_detection) {
     // Check the animes folder.
     if (!fs.existsSync("animes")) {
         console.log("\"animes\" folder not exist. Exiting...")
@@ -88,7 +98,7 @@ function create(episode, max_episode) {
         // We have our private stuff in here so....
         if (fs.existsSync("create.private.sh")) {
             execSync(`bash create.private.sh ${episodePad}`);
-            config(max_episode);
+            config(max_episode, duplicate_detection);
             return;
         }
         // But hey! I have the public one here.
@@ -119,7 +129,7 @@ function create(episode, max_episode) {
         execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
         
         // And then set up config
-        config(max_episode);
+        config(max_episode, duplicate_detection);
     } catch (err) {
         console.error(err.message);
         process.exit(1); // Need to kill so that index.js doesnt continue shit.
@@ -130,8 +140,9 @@ function create(episode, max_episode) {
  * Create a new data.json and then save it to "configs" folder
  *
  * @param {number=} max_episode - Max episode for data.json
+ * @param {boolean=} duplicate_detection - Enable duplicate detection
  */
-function config(max_episode) {
+function config(max_episode, duplicate_detection) {
     const frames = fs.readdirSync("frames");
     const episode = frames[0].split("_")[0]; // The prefix of the file is the episode
     
@@ -139,7 +150,8 @@ function config(max_episode) {
         current_episode: parseInt(episode),
         max_episode: max_episode || fs.readdirSync("animes").length,
         current_frame: 1,
-        max_frame: frames.length
+        max_frame: frames.length,
+        enable_duplicate_detection: duplicate_detection || false
     }
     
     // Write it to file
