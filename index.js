@@ -141,6 +141,9 @@ const sxcu = JSON.parse(fs.readFileSync("configs/uploader.sxcu", { encoding: "ut
     updateData();
     // Delete the current frame file
     fs.unlinkSync(framePath);
+    // Sometimes the program keep running even after publishing the post.
+    // So we have to explicitly exit the program.
+    process.exit(0);
 })();
 
 /**
