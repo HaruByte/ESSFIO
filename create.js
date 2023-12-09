@@ -77,7 +77,7 @@ function create(episode, max_episode, duplicate_detection) {
     // Folders handling
     if (fs.existsSync("frames")) {
         // If exist, delete all the files inside.
-        console.log("Deleting all the frame files...");
+        console.log("Deleting all the existing frames...");
         
         const frames = fs.readdirSync("frames");
         if (frames) for (const fr of frames) {
