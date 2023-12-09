@@ -28,9 +28,9 @@ const sxcu = JSON.parse(fs.readFileSync("configs/uploader.sxcu", { encoding: "ut
     /** @const {number} current_frame - Current frame */
     const current_frame = data.current_frame;
     /** @const {string} frameWithPad - Current frame with format "XXXX" */
-    const frameWithPad = current_frame.toString().padStart(4, "0");
+    const frameWithPad = addNumberPad(current_frame, 4);
     /** @const {string} episodeWithPad - Current episode with format "XX" */
-    const episodeWithPad = data.current_episode.toString().padStart(2, "0");
+    const episodeWithPad = addNumberPad(data.current_episode, 2);
     
     // All frames already published.
     // Try either creating new data.json from next episode,
@@ -82,9 +82,7 @@ const sxcu = JSON.parse(fs.readFileSync("configs/uploader.sxcu", { encoding: "ut
         console.log("Duplicate detection is enabled. Detecting duplication...");
         
         /** @var {string} nextFrame - Next frame with format "XXXX" */
-        let nextFrame = (data.current_frame + 1)
-            .toString()
-            .padStart(4, "0");
+        let nextFrame = addNumberPad(data.current_frame + 1, 4);
         /** @var {string} nextFrameName - Filename of the next frame */
         let nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
         
@@ -98,9 +96,7 @@ const sxcu = JSON.parse(fs.readFileSync("configs/uploader.sxcu", { encoding: "ut
             skippedFrames++;
             // Update data and the next frame variable
             updateData();
-            nextFrame = (data.current_frame + 1)
-                .toString()
-                .padStart(4, "0");
+            nextFrame = addNumberPad(data.current_frame + 1, 4);
             nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
         }
         
@@ -204,4 +200,17 @@ async function detectDuplicate(file1, file2) {
     );
     
     return (distance == 0); // 0 means there's a duplication detected
+}
+
+/**
+ * Add pad to number like XXXX or XX or idk...
+ * 
+ * @param {number} number - Input number to add pad
+ * @param {number} pad - How many pad on the number
+ * @returns {string} Number with pad
+ */
+function addNumberPad(number, pad) {
+    return number
+        .toString()
+        .padStart(pad, "0");
 }
