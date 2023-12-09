@@ -1,13 +1,14 @@
 /**
 * No Windows here, madam.
 * Go boot to Linux or use WSL.
-*
+* <br>
 * Anyway, This is for creating new data file and generating frames from video file.
 * All the anime video file must be in "animes" folder with format name "XX.{ mp4 | mkv }" where "XX" is number like "01".
 *
 * @file
 * @author AozoraDev
 */
+/** @module create */
 
 const fs = require("fs");
 const pkg = require("./package.json");
@@ -63,6 +64,7 @@ if (require.main == module) {
  * @param {number} episode - The episode to generate.
  * @param {number=} max_episode - Max episode for data.json
  * @param {boolean=} duplicate_detection - Enable duplicate detection
+ * @throws {Error}
  */
 function create(episode, max_episode, duplicate_detection) {
     // Check the animes folder.
@@ -133,7 +135,8 @@ function create(episode, max_episode, duplicate_detection) {
 
 /**
  * Create a new data.json and then save it to "configs" folder
- *
+ * 
+ * @private
  * @param {number=} max_episode - Max episode for data.json
  * @param {boolean=} duplicate_detection - Enable duplicate detection
  */
@@ -154,8 +157,4 @@ function config(max_episode, duplicate_detection) {
     console.log("Creating data and frames successfully!");
 }
 
-/**
- * Module for creating new data.json and generating frame files
- * @module create
- */
 module.exports = create;
