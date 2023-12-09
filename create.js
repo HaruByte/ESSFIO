@@ -94,46 +94,41 @@ function create(episode, max_episode, duplicate_detection) {
     // Just create new folder if not exists
     if (!fs.existsSync("configs")) fs.mkdirSync("configs");
     
-    try {
-        // We have our private stuff in here so....
-        if (fs.existsSync("create.private.sh")) {
-            execSync(`bash create.private.sh ${episodePad}`);
-            config(max_episode, duplicate_detection);
-            return;
-        }
-        // But hey! I have the public one here.
-        
-        // Get the files inside "animes" folder
-        const animes = fs.readdirSync("animes");
-        // Filter only video with filename "XX.{ mp4 | mkv }"
-        const anime = animes.filter(a => /\.(mp4|mkv)$/.test(a) && a.includes(episodePad))[0];
-        
-        // Check it again, just to make sure if the file is exist
-        if (!anime) throw new Error("Video file is not found!");
-        
-        console.log(`Start creating data and frames for episode ${episodePad}...`);
-        // Extract the frames.
-        // Gotta use jpeg for this since png really fucked up the storage
-        console.log("Extracting frames...");
-        
-        const args = [
-            `-i "animes/${anime}"`, // Getting the video file
-            "-r 2", // Make it 2FPS
-            "-qscale:v 2", // So the frame file is not blurry
-            `-vf "fps=2${(anime.includes(".mkv")) ? ",subtitles=animes/" + anime : ""}"`, // Also making the video 2fps but add subtitle filter if file is mkv
-            "-hide_banner", // Hide the banner, i guess?
-            "-loglevel error", // Uhm...
-            "-stats", // Idk...
-            "-y" // Yess
-        ];
-        execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
-        
-        // And then set up config
+    // We have our private stuff in here so....
+    if (fs.existsSync("create.private.sh")) {
+        execSync(`bash create.private.sh ${episodePad}`);
         config(max_episode, duplicate_detection);
-    } catch (err) {
-        console.error(err.message);
-        process.exit(1); // Need to kill so that index.js doesnt continue shit.
+        return;
     }
+    // But hey! I have the public one here.
+    
+    // Get the files inside "animes" folder
+    const animes = fs.readdirSync("animes");
+    // Filter only video with filename "XX.{ mp4 | mkv }"
+    const anime = animes.filter(a => /\.(mp4|mkv)$/.test(a) && a.includes(episodePad))[0];
+    
+    // Check it again, just to make sure if the file is exist
+    if (!anime) throw new Error("Video file is not found!");
+    
+    console.log(`Start creating data and frames for episode ${episodePad}...`);
+    // Extract the frames.
+    // Gotta use jpeg for this since png really fucked up the storage
+    console.log("Extracting frames...");
+    
+    const args = [
+        `-i "animes/${anime}"`, // Getting the video file
+        "-r 2", // Make it 2FPS
+        "-qscale:v 2", // So the frame file is not blurry
+        `-vf "fps=2${(anime.includes(".mkv")) ? ",subtitles=animes/" + anime : ""}"`, // Also making the video 2fps but add subtitle filter if file is mkv
+        "-hide_banner", // Hide the banner, i guess?
+        "-loglevel error", // Uhm...
+        "-stats", // Idk...
+        "-y" // Yess
+    ];
+    execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
+    
+    // And then set up config
+    config(max_episode, duplicate_detection);
 }
 
 /**
