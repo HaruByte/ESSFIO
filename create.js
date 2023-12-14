@@ -11,7 +11,6 @@
 /** @module create */
 
 const fs = require("fs");
-const pkg = require("./package.json");
 const { program } = require("commander");
 const { execSync } = require("child_process");
 
@@ -21,40 +20,25 @@ if (require.main == module) {
     program
         .name("create.js")
         .description("Create new data file and extract frames from video file.")
-        .version(pkg.version)
+        .version(require("./package.json").version)
         .usage("[options] <episode (number)>");
     
     // Options
     program
         .option("-m, --max-episode <number>", "Using custom max episode instead")
-        .option("-d, --enable-duplicate-detection <boolean>", "Enable frame duplicate detection");
+        .option("-d, --enable-duplicate-detection", "Enable frame duplicate detection")
     
     program.parse(process.argv);
+    const opts = program.opts();
     const episode = program.args[0];
-    const max_episode = program.opts().maxEpisode;
-    const duplicate_detection = (program.opts().enableDuplicateDetection)
-        ? JSON.parse(program.opts().enableDuplicateDetection)
-        : null;
-    
-    const parsedEpisode = parseInt(episode);
-    const parsedMaxEpisode = parseInt(max_episode);
     
     // Show help if episode arg not exist
     if (!episode) program.help();
     
-    if (max_episode && isNaN(parsedMaxEpisode)) {
-        throw new TypeError("max_episode is not a number.");
-    }
-    if (isNaN(parsedEpisode)) {
-        throw new TypeError("episode is not a number.");
-    }
-    
-    // Create it now if valid
-    require("./utils/console.js");
     create(
-        parsedEpisode,
-        parsedMaxEpisode,
-        duplicate_detection
+        parseInt(episode),
+        parseInt(opts.maxEpisode),
+        opts.enableDuplicateDetection
     );
 }
 
@@ -62,15 +46,23 @@ if (require.main == module) {
  * Create new data.json and generate frames file from video file.
  * 
  * @param {number} episode - The episode to generate.
- * @param {number=} max_episode - Max episode for data.json
- * @param {boolean=} duplicate_detection - Enable duplicate detection
- * @throws {Error}
+ * @param {?number} max_episode - Max episode for data.json
+ * @param {?boolean} duplicate_detection - Enable duplicate detection
+ * @throws {(Error|TypeError)}
+ * @returns {Object} Output of data.json
  */
 function create(episode, max_episode, duplicate_detection) {
+    // For fancy console lol
+    require("./utils/console.js");
+    
+    // Make sure the episode is a number
+    if (isNaN(episode)) {
+        throw new TypeError("The argument input is not a number.");
+    }
+    
     // Check the animes folder.
     if (!fs.existsSync("animes")) {
-        console.log("\"animes\" folder not exist. Exiting...")
-        process.exit(1);
+        throw new Error("\"animes\" folder is not exist.");
     }
     
     // Change the episode number to format XX.
@@ -89,7 +81,7 @@ function create(episode, max_episode, duplicate_detection) {
         console.log("All frame files are deleted!");
     } else {
         // If no, create new one
-        console.log("\"frame\" folder not exist. Creating new one.")
+        console.log("\"frames\" folder not exist. Creating new one.")
         fs.mkdirSync("frames");
     }
     // Configs has nothing more to do.
@@ -110,12 +102,8 @@ function create(episode, max_episode, duplicate_detection) {
     const anime = animes.filter(a => /\.(mp4|mkv)$/.test(a) && a.includes(episodePad))[0];
     
     // Check it again, just to make sure if the file is exist
-    if (!anime) throw new Error("Video file is not found!");
-    
+    if (!anime) throw new Error("The video file is not found.");
     console.log(`Start creating data and frames for episode ${episodePad}...`);
-    // Extract the frames.
-    // Gotta use jpeg for this since png really fucked up the storage
-    console.log("Extracting frames...");
     
     const args = [
         `-i "animes/${anime}"`, // Getting the video file
@@ -127,10 +115,11 @@ function create(episode, max_episode, duplicate_detection) {
         "-stats", // Idk...
         "-y" // Yess
     ];
+    console.log("Extracting frames...");
     execSync(`ffmpeg ${args.join(" ")} ./frames/${episodePad}_%04d.jpeg > /dev/null 2>&1`);
     
-    // And then set up config
-    config(max_episode, duplicate_detection);
+    // And then set up config then return the result
+    return config(max_episode, duplicate_detection);
 }
 
 /**
@@ -139,6 +128,8 @@ function create(episode, max_episode, duplicate_detection) {
  * @private
  * @param {number=} max_episode - Max episode for data.json
  * @param {boolean=} duplicate_detection - Enable duplicate detection
+ * @throws {Error}
+ * @returns {Object} Output of data.json
  */
 function config(max_episode, duplicate_detection) {
     const frames = fs.readdirSync("frames");
@@ -155,6 +146,8 @@ function config(max_episode, duplicate_detection) {
     // Write it to file
     fs.writeFileSync("configs/data.json", JSON.stringify(configs, null, 2));
     console.log("Creating data and frames successfully!");
+    
+    return configs;
 }
 
 module.exports = create;
