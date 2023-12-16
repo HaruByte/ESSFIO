@@ -84,7 +84,7 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
         /** @var {string} nextFrameName - Filename of the next frame */
         let nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
         
-        // Keep looping until no more duplicate detected
+        // Keep looping until no more duplicate detected.
         while (await util.detectDuplicate(framePath, "frames/" + nextFrameName)) {
             console.warn(`${nextFrameName} is a duplicate of ${fileName}.`);
             
@@ -148,7 +148,7 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
  */
 function updateData(sum) {
     if (sum) {
-        data.current_frame += sum;
+        data.current_frame += (sum + 1);
     } else {
         data.current_frame++;
     }

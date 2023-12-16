@@ -30,9 +30,11 @@ function addNumberPad(number, pad) {
  * @async
  * @param {string} file1 - Path to the first file
  * @param {string} file2 - Path to the second file
- * @returns {Promise<boolean>} true if duplication is detected, false if not duplication.
+ * @returns {Promise<boolean>} true if file1 and file2 is duplicate, false if not a duplicate or the file2 is not exist.
  */
 async function detectDuplicate(file1, file2) {
+    if (!fs.existsSync(file2)) return false;
+    
     const distance = await hammingDistance(
         fs.readFileSync(file1),
         fs.readFileSync(file2),
