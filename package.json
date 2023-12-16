@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AozoraDev/ESSFIO.git"
+    "url": "git+https://github.com/HaruByte/ESSFIO.git"
   },
-  "author": "AozoraDev",
+  "author": "HaruByte",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AozoraDev/ESSFIO/issues"
+    "url": "https://github.com/HaruByte/ESSFIO/issues"
   },
-  "homepage": "https://github.com/AozoraDev/ESSFIO#readme",
+  "homepage": "https://github.com/HaruByte/ESSFIO#readme",
   "dependencies": {
     "commander": "^11.1.0",
     "dotenv": "^16.3.1",
