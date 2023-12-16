@@ -80,7 +80,7 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
         console.log("Duplicate detection is enabled. Detecting duplication...");
         
         /** @var {string} nextFrame - Next frame with format "XXXX" */
-        let nextFrame = util.addNumberPad(data.current_frame + 1, 4);
+        let nextFrame = util.addNumberPad(current_frame + 1, 4);
         /** @var {string} nextFrameName - Filename of the next frame */
         let nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
         
@@ -92,9 +92,8 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
             fs.unlinkSync("frames/" + nextFrameName);
             // Plus 1 the skipped frames variable
             skippedFrames++;
-            // Update data and the next frame variable
-            updateData();
-            nextFrame = util.addNumberPad(data.current_frame + 1, 4);
+            // Update the next frame variable
+            nextFrame = util.addNumberPad(parseInt(nextFrame) + 1, 4);
             nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
         }
         
@@ -132,7 +131,7 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
     if (formData.get("published") == "false") console.log("Nah jk. It's not published lol.");
     
     // Update data
-    updateData();
+    updateData(skippedFrames);
     // Delete the current frame file
     fs.unlinkSync(framePath);
     // Sometimes the program keep running even after publishing the post.
@@ -143,10 +142,16 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
 /**
  * Plus 1 the current frame and then save the data.json file
  * 
+ * @param {?number} sum - The sum of the frames added
  * @returns {void}
  * @throws {Error}
  */
-function updateData() {
-    data.current_frame++;
+function updateData(sum) {
+    if (sum) {
+        data.current_frame += sum;
+    } else {
+        data.current_frame++;
+    }
+    
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
 }
