@@ -58,7 +58,7 @@ async function uploadImage(path, fileName) {
     const file = fs.readFileSync(path);
     const sxcuData = new FormData();
     
-    sxcuData.append(sxcu.FileFormName, new Blob([file]), fileName || "file.jpeg");
+    sxcuData.append("file", new Blob([file]), fileName || sxcu.FileFormName);
     if (sxcu.Arguments) for (const prop in sxcu.Arguments) {
         sxcuData.append(prop, sxcu.Arguments[prop]);
     }
