@@ -72,7 +72,7 @@ async function uploadImage(path, fileName) {
     // The fetch should throw error, but this one is just in case.
     if (!res.url) throw new Error("URL output is not exist");
     
-    return res.url + ".jpeg";
+    return res;
 }
 
 module.exports = {

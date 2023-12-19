@@ -114,9 +114,11 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
         : "true"; // PUBLISHED not exist or null, just use true.
     
     const formData = new FormData();
+    const img = await util.uploadImage(framePath, fileName);
+    
     formData.append("access_token", process.env.TOKEN); // Facebook Page access token
     formData.append("published", published);
-    formData.append("url", await util.uploadImage(framePath, fileName));
+    formData.append("url", img.url + ".jpeg");
     formData.append("caption", caption);
     
     // Create new feed on Facebook Page
@@ -132,8 +134,11 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
     
     // Update data
     updateData(skippedFrames);
-    // Delete the current frame file
+    // Delete the current frame file and in the sxcu server
     fs.unlinkSync(framePath);
+    await fetch(img.del_url)
+        .catch(() => console.error("Failed to delete image from ShareX server."));
+    
     // Sometimes the program keep running even after publishing the post.
     // So we have to explicitly exit the program.
     process.exit(0);
