@@ -73,8 +73,8 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
     }
     
     // Frames duplication detection (if enabled)
-    /** @var {number} skippedFrames - Total of how much frames is skipped due to duplication */
-    let skippedFrames = 0;
+    /** @const {Array} skippedFrames - Array of frames that are skipped due to duplication */
+    const skippedFrames = [];
     
     if (data.enable_duplicate_detection) {
         console.log("Duplicate detection is enabled. Detecting duplication...");
@@ -88,10 +88,9 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
         while (await util.detectDuplicate(framePath, "frames/" + nextFrameName)) {
             console.warn(`${nextFrameName} is a duplicate of ${fileName}.`);
             
-            // Delete duplicate
-            fs.unlinkSync("frames/" + nextFrameName);
-            // Plus 1 the skipped frames variable
-            skippedFrames++;
+            // Add the skipped frame to array.
+            // This is for deleting them after publishing frame is done.
+            skippedFrames.push("frames/" + nextFrameName);
             // Update the next frame variable
             nextFrame = util.addNumberPad(parseInt(nextFrame) + 1, 4);
             nextFrameName = `${episodeWithPad}_${nextFrame}.jpeg`;
@@ -105,7 +104,7 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
         `Episode ${episodeWithPad}` // Episode
         + " - "
         + `Frame ${current_frame} out of ${data.max_frame}` // Frame
-        + ((skippedFrames) ? `\n${skippedFrames} frame${(skippedFrames > 1) ? "s" : ""} will be skipped in the next post.\n` : "\n") // Skipped frame
+        + ((skippedFrames.length) ? `\n${skippedFrames.length} frames will be skipped in the next post.\n` : "\n") // Skipped frame
         + `#ESSFIOEPS${data.current_episode}`; // Unique tag
     
     // for Facebook
@@ -133,9 +132,15 @@ let data = JSON.parse(fs.readFileSync(dataPath, { encoding: "utf8" }));
     if (formData.get("published") == "false") console.log("Nah jk. It's not published lol.");
     
     // Update data
-    updateData(skippedFrames);
-    // Delete the current frame file and in the sxcu server
+    updateData(skippedFrames.length);
+    
+    // Delete the current frame file, 
+    // skipped frames if exists,
+    // and the current frame in the sxcu server
     fs.unlinkSync(framePath);
+    for (const sf of skippedFrames) {
+        fs.unlinkSync(sf);
+    }
     await fetch(img.del_url)
         .catch(() => console.error("Failed to delete image from ShareX server."));
     
