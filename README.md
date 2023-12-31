@@ -1,5 +1,5 @@
 ## ESSFIO
-<img src="https://github.com/AozoraDev/ESSFIO/assets/61007475/a42f69c9-3189-4046-8fa9-e22c1d5d5293" align="right" width="100" height="100">
+<img src="https://harubyte.my.id/img/projects/essfio.webp" align="right" width="100" height="100">
 ESSFIO or Every Slow Start Frame in Order is a Facebook page that posts frames from Slow Start every 15 minutes.
 
 ## Host Your Own
